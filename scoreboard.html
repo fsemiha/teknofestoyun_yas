@@ -1,0 +1,1786 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Siber Güvenlik Oyunu - Skor Tablosu</title>
+    <style>
+        @font-face {
+            font-family: 'Gilmer';
+            src: url('fonts/Gilmer Regular.otf') format('opentype');
+            font-weight: normal;
+            font-style: normal;
+        }
+        @font-face {
+            font-family: 'Gilmer';
+            src: url('fonts/Gilmer Bold.otf') format('opentype');
+            font-weight: bold;
+            font-style: normal;
+        }
+        @font-face {
+            font-family: 'Gilmer Light';
+            src: url('fonts/Gilmer Light.otf') format('opentype');
+            font-weight: 300;
+            font-style: normal;
+        }
+        @font-face {
+            font-family: 'Conthrax';
+            src: url('fonts/conthrax-sb.otf') format('opentype');
+            font-weight: bold;
+            font-style: normal;
+        }
+
+        body, html {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            font-family: 'Gilmer', Arial, sans-serif;
+            background: radial-gradient(circle at 20% 40%, #0a2a4d 60%, #0b0f2a 100%);
+            color: #fff;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        .background {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .background-img {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            object-fit: cover;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .logo {
+            position: fixed;
+            top: 32px;
+            left: 32px;
+            width: 110px;
+            height: auto;
+            z-index: 3;
+        }
+
+        .center-panel {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 2;
+        }
+
+        .password-panel-outer {
+            position: relative;
+            width: 1200px;
+            max-width: 98vw;
+            height: 850px;
+            max-height: 98vh;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            overflow: hidden;
+            min-width: 400px;
+            min-height: 500px;
+        }
+
+        .password-panel-bg {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%; z-index: 0;
+            pointer-events: none;
+        }
+
+        .password-panel-content {
+            position: absolute;
+            top: 90px;
+            left: 0;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 2;
+            min-height: 420px;
+            justify-content: flex-start;
+            padding: 20px 40px 60px 40px;
+        }
+
+        .security-icon {
+            width: 52px;
+            height: auto;
+            margin-bottom: 8px;
+        }
+
+        .password-title {
+            font-size: 1.4rem;
+            font-family: 'Conthrax', 'Gilmer', Arial, sans-serif;
+            font-weight: bold;
+            color: #fff;
+            margin-bottom: 6px;
+            letter-spacing: 1px;
+            text-align: center;
+        }
+
+        .password-desc {
+            font-size: 1.2rem;
+            color: #fff;
+            margin-bottom: 18px;
+            text-align: center;
+            font-family: 'Gilmer Light', Arial, sans-serif;
+            font-weight: 300;
+        }
+
+        .last-update {
+            position: absolute;
+            top: 165px;
+            left: 130px;
+            color: #e0e0e0;
+            font-size: 1rem;
+            font-family: 'Gilmer', Arial, sans-serif;
+            font-weight: 500;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+        }
+        
+        /* Geçici mesaj animasyonu */
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translateY(-20px); }
+            20% { opacity: 1; transform: translateY(0); }
+            80% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-20px); }
+        }
+
+        .refresh-btn {
+            position: absolute;
+            bottom: 15px;
+            right: 180px;
+            cursor: pointer;
+            max-width: 100px;
+            transition: all 0.3s ease;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+            z-index: 3;
+        }
+
+        .refresh-btn:hover {
+            transform: scale(1.1) rotate(180deg);
+        }
+
+        .clear-btn {
+            position: absolute;
+            bottom: 15px;
+            right: 300px;
+            cursor: pointer;
+            max-width: 100px;
+            transition: all 0.3s ease;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+            z-index: 3;
+        }
+
+        .clear-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .pagination-controls {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 15px;
+            padding: 5px;
+        }
+
+        .page-btn {
+            background: linear-gradient(135deg, #6c2bcf, #9146ff);
+            border: 2px solid rgba(255,255,255,0.2);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: 'Gilmer', Arial, sans-serif;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            min-width: 35px;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+
+        .page-btn:hover:not(:disabled) {
+            background: linear-gradient(135deg, #8a4ae6, #a966ff);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(145, 70, 255, 0.4);
+        }
+
+        .page-btn:disabled {
+            background: rgba(108, 43, 207, 0.3);
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        .page-btn.active {
+            background: linear-gradient(135deg, #ff6b35, #f7931e);
+            box-shadow: 0 0 15px rgba(255, 107, 53, 0.5);
+        }
+
+        .page-info {
+            color: #e0e0e0;
+            font-family: 'Gilmer', Arial, sans-serif;
+            font-size: 0.85rem;
+            margin: 0 8px;
+        }
+
+        .scoreboard-table {
+            max-width: 1000px !important;
+        }
+
+        @media (max-width: 1100px) {
+            .scoreboard-table {
+                max-width: 95vw !important;
+            }
+            .scoreboard-header {
+                font-size: 0.9rem !important;
+                padding: 10px 15px !important;
+            }
+        }
+
+        @media (max-width: 900px) {
+            .password-panel-outer {
+                width: 95vw;
+                height: 85vh;
+            }
+            
+            .scoreboard-table {
+                max-width: 95vw !important;
+            }
+            .scoreboard-header {
+                font-size: 0.8rem !important;
+                padding: 8px 12px !important;
+            }
+
+            .last-update {
+                font-size: 0.9rem;
+                top: 12px;
+                left: 20px;
+            }
+
+            .refresh-btn {
+                max-width: 70px;
+                bottom: 10px;
+                right: 110px;
+            }
+
+            .clear-btn {
+                max-width: 70px;
+                bottom: 10px;
+                right: 200px;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .password-panel-outer {
+                width: 98vw;
+                height: 90vh;
+            }
+
+            .last-update {
+                font-size: 0.8rem;
+                top: 10px;
+                left: 15px;
+            }
+
+            .refresh-btn {
+                max-width: 60px;
+                bottom: 5px;
+                right: 90px;
+            }
+
+            .clear-btn {
+                max-width: 60px;
+                bottom: 5px;
+                right: 170px;
+            }
+        }
+        
+        /* Teknofest Büyük Ekran Optimizasyonu */
+        @media (min-width: 1400px) and (min-height: 900px) {
+            .password-panel-outer {
+                width: 1200px;
+                max-width: 90vw;
+                height: 850px;
+                max-height: 90vh;
+            }
+            
+            .password-panel-content {
+                padding: 20px 60px 80px 60px;
+                min-height: 550px;
+            }
+            
+            .scoreboard-table {
+                max-height: 600px;
+                overflow-y: auto;
+            }
+            
+            .pagination-controls {
+                margin-top: 25px;
+                padding: 15px;
+                gap: 20px;
+            }
+            
+            .page-btn {
+                padding: 8px 15px;
+                font-size: 1rem;
+                min-width: 40px;
+            }
+            
+            .page-info {
+                font-size: 1rem;
+                margin: 0 10px;
+            }
+        }
+
+        /* Daha Büyük Ekranlar İçin Responsive Design */
+        @media (min-width: 1400px) {
+            .password-panel-outer {
+                width: 1300px;
+                height: 900px;
+            }
+            .password-title {
+                font-size: 1.6rem;
+            }
+            .password-desc {
+                font-size: 1.3rem;
+            }
+        }
+
+        @media (max-width: 1200px) {
+            .password-panel-outer {
+                width: 95vw;
+                height: 750px;
+            }
+            .password-panel-content {
+                padding: 20px 30px 60px 30px;
+            }
+        }
+
+        @media (max-width: 900px) {
+            .password-panel-outer {
+                width: 98vw;
+                height: 650px;
+            }
+            .password-title {
+                font-size: 1.2rem;
+            }
+            .password-desc {
+                font-size: 1rem;
+            }
+            .logo {
+                width: 90px;
+                top: 20px;
+                left: 20px;
+            }
+            .last-update {
+                font-size: 0.9rem;
+                top: 145px;
+                left: 110px;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .password-panel-outer {
+                width: 98vw;
+                height: 600px;
+            }
+            .password-panel-content {
+                padding: 15px 20px 50px 20px;
+                top: 70px;
+            }
+            .password-title {
+                font-size: 1rem;
+                margin-bottom: 4px;
+            }
+            .password-desc {
+                font-size: 0.9rem;
+                margin-bottom: 15px;
+            }
+            .security-icon {
+                width: 40px !important;
+                height: 40px !important;
+                margin-bottom: 6px;
+            }
+            .last-update {
+                top: 120px;
+                left: 90px;
+                font-size: 0.8rem;
+            }
+            .refresh-btn, .clear-btn {
+                max-width: 70px;
+                bottom: 10px;
+            }
+            .clear-btn {
+                right: 200px;
+            }
+            .refresh-btn {
+                right: 110px;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .password-panel-outer {
+                width: 98vw;
+                height: 550px;
+                min-height: 400px;
+            }
+            .password-panel-content {
+                padding: 10px 15px 40px 15px;
+                top: 60px;
+            }
+            .password-title {
+                font-size: 0.9rem;
+                letter-spacing: 0.5px;
+            }
+            .password-desc {
+                font-size: 0.8rem;
+                margin-bottom: 12px;
+            }
+            .security-icon {
+                width: 35px !important;
+                height: 35px !important;
+                margin-bottom: 4px;
+            }
+            .logo {
+                width: 70px;
+                top: 15px;
+                left: 15px;
+            }
+            .last-update {
+                top: 100px;
+                left: 70px;
+                font-size: 0.7rem;
+            }
+            .refresh-btn, .clear-btn {
+                max-width: 55px;
+                bottom: 8px;
+            }
+            .clear-btn {
+                right: 150px;
+            }
+            .refresh-btn {
+                right: 80px;
+            }
+            .page-btn {
+                padding: 4px 8px;
+                font-size: 0.8rem;
+            }
+            .page-info {
+                font-size: 0.8rem;
+            }
+        }
+
+        /* iPad Mini 6. nesil optimizasyonu - Landscape (1133x744) */
+        @media (min-width: 1100px) and (max-width: 1150px) and (min-height: 720px) and (max-height: 770px) {
+            .password-panel-outer {
+                width: 1000px;
+                max-width: 92vw;
+                height: 620px;
+                max-height: 85vh;
+            }
+            
+            .password-panel-content {
+                padding: 20px 40px 60px 40px;
+                top: 80px;
+                min-height: 450px;
+            }
+            
+            .password-title {
+                font-size: 1.3rem;
+                margin-bottom: 8px;
+            }
+            
+            .password-desc {
+                font-size: 1.1rem;
+                margin-bottom: 16px;
+            }
+            
+            .security-icon {
+                width: 56px !important;
+                height: 56px !important;
+            }
+            
+            .scoreboard-table {
+                max-width: 900px !important;
+            }
+            
+            .scoreboard-header {
+                font-size: 0.95rem !important;
+                padding: 10px 16px !important;
+            }
+            
+            .last-update {
+                top: 140px;
+                left: 120px;
+                font-size: 0.95rem;
+            }
+            
+            .refresh-btn {
+                max-width: 85px;
+                bottom: 12px;
+                right: 160px;
+            }
+            
+            .clear-btn {
+                max-width: 85px;
+                bottom: 12px;
+                right: 280px;
+            }
+            
+            .logo {
+                width: 95px;
+                top: 28px;
+                left: 28px;
+            }
+            
+            .page-btn {
+                padding: 6px 14px;
+                font-size: 0.95rem;
+                min-width: 38px;
+            }
+            
+            .page-info {
+                font-size: 0.95rem;
+            }
+            
+            .pagination-controls {
+                margin-top: 18px;
+                gap: 18px;
+            }
+        }
+
+        /* iPad Mini 6. nesil optimizasyonu - Portrait (744x1133) */
+        @media (min-width: 720px) and (max-width: 770px) and (min-height: 1100px) and (max-height: 1150px) {
+            .password-panel-outer {
+                width: 680px;
+                max-width: 95vw;
+                height: 950px;
+                max-height: 85vh;
+            }
+            
+            .password-panel-content {
+                padding: 20px 30px 80px 30px;
+                top: 80px;
+                min-height: 750px;
+            }
+            
+            .password-title {
+                font-size: 1.2rem;
+                margin-bottom: 6px;
+            }
+            
+            .password-desc {
+                font-size: 1rem;
+                margin-bottom: 18px;
+            }
+            
+            .security-icon {
+                width: 52px !important;
+                height: 52px !important;
+            }
+            
+            .scoreboard-table {
+                max-width: 620px !important;
+            }
+            
+            .scoreboard-header {
+                font-size: 0.85rem !important;
+                padding: 8px 12px !important;
+            }
+            
+            .last-update {
+                top: 135px;
+                left: 100px;
+                font-size: 0.9rem;
+            }
+            
+            .refresh-btn {
+                max-width: 75px;
+                bottom: 10px;
+                right: 130px;
+            }
+            
+            .clear-btn {
+                max-width: 75px;
+                bottom: 10px;
+                right: 230px;
+            }
+            
+            .logo {
+                width: 85px;
+                top: 24px;
+                left: 24px;
+            }
+            
+            .page-btn {
+                padding: 5px 12px;
+                font-size: 0.9rem;
+                min-width: 35px;
+            }
+            
+            .page-info {
+                font-size: 0.9rem;
+            }
+            
+            .pagination-controls {
+                margin-top: 20px;
+                gap: 15px;
+            }
+            
+            /* Skor satırları için özel düzenlemeler */
+            .scoreboard-row {
+                font-size: 0.8rem !important;
+                padding: 8px 10px !important;
+            }
+        }
+    </style>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+</head>
+<body>
+    <div class="background">
+        <img src="assets/Asset 4.svg" alt="Arka Plan" class="background-img">
+        <img src="assets/Asset 5.svg" alt="Logo" class="logo">
+        
+        <div class="center-panel">
+            <div class="password-panel-outer">
+                <img src="assets/Asset 27.svg" alt="Panel Çerçeve" class="password-panel-bg">
+                <div class="password-panel-content" style="align-items:center; padding: 30px; position: relative;">
+                    <!-- Sol üst köşe - Son güncelleme -->
+                    <div class="last-update" id="last-update">Son güncelleme: --:--:--</div>
+                    
+                    <!-- Sağ üst köşe - Yenile butonu -->
+                    <img src="assets/Asset 26.svg" alt="Yenile" id="refresh-scoreboard-btn" class="refresh-btn" onclick="loadScoreboardWithUpdate()">
+                    
+                    <!-- Temizle butonu -->
+                    <img src="assets/Asset 3.svg" alt="Temizle" id="clear-scoreboard-btn" class="clear-btn" onclick="clearScoreboard()">
+                    
+                    <!-- Debug: Manual skor talebi butonu (sadece debug modda) -->
+                    <img src="assets/Asset 3.svg" alt="Skor Talep Et" id="request-scores-btn" class="clear-btn" onclick="requestScoresManually()" style="display: none; margin-left: 10px;">
+                    
+                    <img src="assets/Asset 25.svg" alt="Skor Tablosu İkonu" class="security-icon" style="width: 60px; height: 60px;">
+                    <div class="password-title">SİBER GÜVENLİK SKOR TABLOSU</div>
+                    <div class="password-desc" style="margin-bottom: 20px;">En iyi siber kahramanları keşfedin!</div>
+                    
+                    <!-- Yaş Grubu Filtresi -->
+                    <div class="age-filter-controls" style="display: flex; justify-content: center; gap: 15px; margin: 15px 0; flex-wrap: wrap;">
+                        <button onclick="filterByAgeGroup('all')" id="filter-all" class="age-filter-btn active" style="background: #ff6600; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-size: 14px; transition: all 0.3s ease;">Tümü</button>
+                        <button onclick="filterByAgeGroup('child')" id="filter-child" class="age-filter-btn" style="background: #444; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-size: 14px; transition: all 0.3s ease;">Çocuk (8-14)</button>
+                        <button onclick="filterByAgeGroup('adult')" id="filter-adult" class="age-filter-btn" style="background: #444; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-size: 14px; transition: all 0.3s ease;">Yetişkin (15+)</button>
+                    </div>
+                    
+                    <div class="scoreboard-table" style="width: 100%; max-width: 1000px; margin: 20px auto;">
+                        <div class="scoreboard-header" style="display: flex; background-color: rgba(108, 43, 207, 0.3); padding: 12px 18px; border-radius: 6px; margin-bottom: 5px; font-weight: bold; font-size: 1rem; line-height: 1.3;">
+                            <span style="flex: 0 0 80px; color: #ffaa00;">Sıra</span>
+                            <span style="flex: 1; color: #ffffff;">Kullanıcı Adı</span>
+                            <span style="flex: 0 0 120px; color: #ffffff; text-align: center;">Yaş Grubu</span>
+                            <span style="flex: 0 0 130px; color: #ffffff; text-align: center;">Toplam Puan</span>
+                            <span style="flex: 0 0 100px; color: #ffffff; text-align: center;">Süre</span>
+                            <span style="flex: 0 0 140px; color: #ffffff; text-align: center;">Tarih</span>
+                        </div>
+                        <div id="scoreboard-list">
+                            <!-- Skor listesi burada dinamik olarak oluşturulacak -->
+                        </div>
+                        
+                        <!-- Sayfalama kontrolleri -->
+                        <div class="pagination-controls" id="pagination-controls" style="display: none;">
+                            <button class="page-btn" id="prev-btn" onclick="changePage(-1)">◀</button>
+                            <span class="page-info" id="page-info">Sayfa 1 / 1</span>
+                            <button class="page-btn" id="next-btn" onclick="changePage(1)">▶</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global değişkenler
+        let currentAgeFilter = 'all'; // Yaş grubu filtresi
+        
+        // Firebase Configuration - teknofest projesi
+        const firebaseConfig = {
+            apiKey: "AIzaSyB3ofVngr1rY6Zr2bTSE3PRFT1z104nMXo",
+            authDomain: "teknofest-c7a92.firebaseapp.com",
+            databaseURL: "https://teknofest-c7a92-default-rtdb.firebaseio.com",
+            projectId: "teknofest-c7a92",
+            storageBucket: "teknofest-c7a92.firebasestorage.app",
+            messagingSenderId: "478655816162",
+            appId: "1:478655816162:web:0cb7626d34935611ed59bb",
+            measurementId: "G-PG8ZFFEWJP"
+        };
+
+        // Firebase'i başlat
+        let database = null;
+        let isFirebaseEnabled = false;
+        let localNetworkChannel = null;
+        
+        if (firebaseConfig.apiKey && firebaseConfig.apiKey !== "AIzaSyExample...") {
+            try {
+                firebase.initializeApp(firebaseConfig);
+                database = firebase.database();
+                isFirebaseEnabled = true;
+                console.log("✅ Skorboard: Firebase başarıyla bağlandı");
+                console.log("🔗 Database URL:", firebaseConfig.databaseURL);
+                
+                // Mevcut status div'ini kaldır (temizlik)
+                const existingStatus = document.getElementById('firebase-status');
+                if (existingStatus) {
+                    existingStatus.remove();
+                }
+                
+                // Bağlantı testini yap
+                database.ref('.info/connected').on('value', function(snapshot) {
+                    if (snapshot.val() === true) {
+                        console.log("🌐 Skorboard: Firebase gerçek zamanlı bağlantı AKTİF");
+                        showFirebaseStatus("🌐 Çoklu ekran aktif", "#00ff99");
+                    } else {
+                        console.log("⚠️ Skorboard: Firebase bağlantısı kopuk");
+                        showFirebaseStatus("⚠️ Bağlantı kopuk", "#ffaa00");
+                        // Firebase kopuksa yerel ağı dene
+                        setupLocalNetworkSync();
+                    }
+                });
+                
+            } catch (error) {
+                console.warn("❌ Skorboard: Firebase bağlantısı başarısız, yerel ağ modu:", error);
+                isFirebaseEnabled = false;
+                showFirebaseStatus("💾 Yerel ağ modu", "#ffaa00");
+                setupLocalNetworkSync();
+            }
+        } else {
+            console.warn("⚙️ Skorboard: Firebase konfigürasyonu eksik, yerel ağ modu");
+            console.log("📋 Çoklu ekran için FIREBASE_KURULUM.md dosyasını okuyun");
+            isFirebaseEnabled = false;
+            showFirebaseStatus("⚙️ Yerel ağ modu aktif", "#ff4444");
+            setupLocalNetworkSync();
+        }
+        
+        // Yerel ağ senkronizasyonu kur
+        function setupLocalNetworkSync() {
+            console.log("🏠 Scoreboard yerel ağ senkronizasyonu başlatılıyor...");
+            
+            if ('BroadcastChannel' in window) {
+                localNetworkChannel = new BroadcastChannel('siber-macera-scores');
+                
+                localNetworkChannel.onmessage = (event) => {
+                    const { type, data } = event.data;
+                    console.log("📡 Scoreboard ağ mesajı alındı:", type, data);
+                    
+                    switch (type) {
+                        case 'SCORE_UPDATE':
+                            console.log("📊 Skor güncellemesi alındı:", data?.length || 0);
+                            handleNetworkScoreUpdate(data);
+                            // Scoreboard'u anında güncelle
+                            setTimeout(() => loadScoreboard(), 500);
+                            break;
+                        case 'NEW_SCORE':
+                            console.log("⚡ Yeni skor alındı:", data?.username, data?.score);
+                            handleNewNetworkScore(data);
+                            break;
+                        case 'REQUEST_SCORES':
+                            console.log("📤 Skor talebi alındı, skorlar gönderiliyor");
+                            sendLocalScores();
+                            break;
+                        case 'SCORES_RESPONSE':
+                            console.log("📥 Skor yanıtı alındı:", data?.length || 0);
+                            mergeNetworkScores(data);
+                            break;
+                        case 'CLEAR_SCORES':
+                            console.log("🗑️ Skorları temizle mesajı alındı");
+                            handleClearScoresFromNetwork(data);
+                            break;
+                        case 'DEVICE_PING':
+                            console.log("📱 Scoreboard cihaz ping alındı:", data.deviceId, "Skor sayısı:", data.scoreCount);
+                            // Ping alan cihazdan skorları talep et
+                            if (data.scoreCount > 0) {
+                                localNetworkChannel.postMessage({ type: 'REQUEST_SCORES' });
+                            }
+                            break;
+                    }
+                };
+                
+                // Sayfa yüklendiğinde skorları talep et
+                setTimeout(() => {
+                    localNetworkChannel.postMessage({ type: 'REQUEST_SCORES' });
+                    console.log("🚀 İlk skor talebi gönderildi");
+                }, 1000);
+                
+                // Kısa aralıklarla skorları talep et ve paylaş
+                setInterval(() => {
+                    localNetworkChannel.postMessage({ type: 'REQUEST_SCORES' });
+                    sendLocalScores();
+                    console.log("🔄 Periyodik skor senkronizasyonu");
+                }, 5000); // 5 saniyede bir
+                
+                // Scoreboard'u periyodik güncelle
+                setInterval(() => {
+                    loadScoreboard();
+                    console.log("🎯 Scoreboard otomatik yenilendi");
+                }, 10000); // 10 saniyede bir scoreboard yenile
+                
+                console.log("✅ Scoreboard yerel ağ senkronizasyonu aktif - Tabletler arası skor görüntüleme");
+                showFirebaseStatus("🏠 Yerel ağ - Tabletler arası senkronizasyon", "#00ff99");
+            } else {
+                console.warn("❌ BroadcastChannel desteklenmiyor");
+                showFirebaseStatus("📱 Sadece yerel mod", "#ffaa00");
+            }
+        }
+
+        // Ağdan gelen skor güncellemesini işle
+        function handleNetworkScoreUpdate(newScores) {
+            if (!newScores || newScores.length === 0) {
+                console.log("📊 Boş skor güncellemesi alındı");
+                return;
+            }
+            
+            console.log("📊 Ağdan skor güncellemesi alındı:", newScores.length, newScores);
+            
+            // Mevcut yerel skorları al (demo skorları hariç)
+            let localScores = getLocalScores();
+            
+            // Demo skorları kaldır (gerçek skorlar geldiğinde)
+            localScores = localScores.filter(score => !score.deviceId.includes('demo_device'));
+            
+            // Yeni skorları ekle
+            const allScores = [...localScores, ...newScores];
+            
+            // Tekrarları temizle (timestamp'e göre)
+            const uniqueScores = allScores.filter((score, index, self) => 
+                index === self.findIndex(s => s.timestamp === score.timestamp)
+            );
+            
+            // Sırala
+            uniqueScores.sort((a, b) => {
+                if (b.score !== a.score) {
+                    return b.score - a.score;
+                }
+                const timeA = convertTimeToSeconds(a.time);
+                const timeB = convertTimeToSeconds(b.time);
+                return timeA - timeB;
+            });
+            
+            // localStorage'a kaydet
+            localStorage.setItem('cyberScores', JSON.stringify(uniqueScores));
+            
+            console.log("✅ Skorlar güncellendi, toplam:", uniqueScores.length);
+            
+            // Skorları yeniden yükle
+            setTimeout(() => {
+                loadScoreboard();
+                updateLastUpdateTime();
+            }, 200);
+        }
+
+        // Yerel skorları ağa gönder
+        function sendLocalScores() {
+            if (!localNetworkChannel) {
+                console.log("❌ LocalNetworkChannel mevcut değil");
+                return;
+            }
+            
+            const localScores = getLocalScores();
+            console.log("📤 Yerel skorlar gönderiliyor:", localScores.length);
+            
+            if (localScores.length > 0) {
+                localNetworkChannel.postMessage({
+                    type: 'SCORES_RESPONSE',
+                    data: localScores
+                });
+                console.log("✅ Skorlar ağa gönderildi:", localScores.length);
+            } else {
+                console.log("📝 Gönderilecek skor yok");
+            }
+        }
+
+        // Ağdan gelen skorları birleştir
+        function mergeNetworkScores(networkScores) {
+            if (networkScores && networkScores.length > 0) {
+                console.log("🔄 Ağ skorları birleştiriliyor:", networkScores.length);
+                handleNetworkScoreUpdate(networkScores);
+            }
+        }
+
+        // Ağdan gelen temizleme mesajını işle
+        function handleClearScoresFromNetwork(data) {
+            console.log("🗑️ Ağdan skorları temizle mesajı alındı:", data);
+            
+            // Kendi localStorage'ımızı da temizle
+            localStorage.removeItem('cyberScores');
+            localStorage.setItem('cyberScores', '[]');
+            
+            // Scoreboard'u güncelle
+            setTimeout(() => {
+                loadScoreboard();
+                showTemporaryMessage('🗑️ Skorlar ağdan temizlendi');
+            }, 500);
+        }
+
+        // Yeni tek skor işle (anında güncelleme için)
+        function handleNewNetworkScore(newScore) {
+            if (!newScore) return;
+            
+            console.log("⚡ Scoreboard'da yeni skor anında alındı:", newScore.username, newScore.score);
+            
+            const localScores = getLocalScores();
+            
+            // Bu skor zaten var mı kontrol et
+            const exists = localScores.find(s => s.timestamp === newScore.timestamp);
+            if (exists) {
+                console.log("📋 Skor zaten mevcut, atlanıyor");
+                return;
+            }
+            
+            // Yeni skoru ekle
+            localScores.push(newScore);
+            
+            // Sırala
+            localScores.sort((a, b) => {
+                if (b.score !== a.score) {
+                    return b.score - a.score;
+                }
+                const timeA = convertTimeToSeconds(a.time);
+                const timeB = convertTimeToSeconds(b.time);
+                return timeA - timeB;
+            });
+            
+            // localStorage'a kaydet
+            localStorage.setItem('cyberScores', JSON.stringify(localScores));
+            
+            console.log("⚡ Scoreboard'a yeni skor eklendi:", localScores.length);
+            
+            // Skorboard'u anında güncelle
+            setTimeout(() => {
+                loadScoreboard();
+                console.log("📊 Scoreboard anında güncellendi");
+            }, 500);
+        }
+
+        // Device ID oluştur
+        function getDeviceId() {
+            let deviceId = localStorage.getItem('deviceId');
+            if (!deviceId) {
+                deviceId = 'device_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
+                localStorage.setItem('deviceId', deviceId);
+            }
+            return deviceId;
+        }
+
+        // Firebase durumunu ekranda göster (gizli mod)
+        function showFirebaseStatus(message, color) {
+            // Firebase durumu console'da görünsün ama ekranda görünmesin
+            if (message.includes("aktif")) {
+                console.log("🟢 " + message);
+            } else if (message.includes("kopuk")) {
+                console.log("🟡 " + message);
+            } else {
+                console.log("🔴 " + message);
+            }
+            
+            // Görsel mesaj gösterme (istenirse aktif edilebilir)
+            // Kullanıcı debug yapmak isterse bu kısmı açabilir
+        }
+
+        let currentPage = 1;
+        
+        // Sabit 6 skor göster
+        function getItemsPerPage() {
+            return 6; // Tüm ekran boyutları için sabit 6 skor
+        }
+        
+        let totalScores = [];
+
+        function getScores() {
+            if (isFirebaseEnabled) {
+                return getScoresFromFirebase();
+            } else {
+                // Firebase yoksa yerel ağdan ve localStorage'dan skorları birleştir
+                return Promise.resolve(getLocalAndNetworkScores());
+            }
+        }
+
+        // Yerel ve ağ skorlarını birleştir
+        function getLocalAndNetworkScores() {
+            const localScores = getLocalScores();
+            console.log("📱 Yerel ve ağ skorları birleştiriliyor:", localScores.length);
+            
+            // Ağdan skorları talep et
+            if (localNetworkChannel) {
+                localNetworkChannel.postMessage({ type: 'REQUEST_SCORES' });
+                console.log("📡 Ağdan skorlar talep edildi");
+            }
+            
+            // LocalStorage skorlarını sırala ve döndür
+            localScores.sort((a, b) => {
+                if (b.score !== a.score) {
+                    return b.score - a.score;
+                }
+                const timeA = convertTimeToSeconds(a.time);
+                const timeB = convertTimeToSeconds(b.time);
+                return timeA - timeB;
+            });
+            
+            console.log("📊 Döndürülen skor sayısı:", localScores.length);
+            return localScores;
+        }
+        
+        function getScoresFromFirebase() {
+            return new Promise((resolve, reject) => {
+                try {
+                    console.log("🔍 Firebase'den skorlar alınıyor...");
+                    const scoresRef = database.ref('scores');
+                    
+                    // Önce veri var mı kontrol et
+                    scoresRef.once('value', (snapshot) => {
+                        console.log("📊 Firebase snapshot alındı:", {
+                            exists: snapshot.exists(),
+                            hasChildren: snapshot.hasChildren(),
+                            numChildren: snapshot.numChildren(),
+                            val: snapshot.val()
+                        });
+                        
+                        const scores = [];
+                        if (snapshot.exists()) {
+                            snapshot.forEach((child) => {
+                                const scoreData = child.val();
+                                if (scoreData && scoreData.username && scoreData.score !== undefined) {
+                                    scores.push(scoreData);
+                                } else {
+                                    console.warn("⚠️ Geçersiz skor verisi:", scoreData);
+                                }
+                            });
+                        }
+                        
+                        console.log("📈 Firebase'den alınan skor sayısı:", scores.length);
+                        
+                        // Sıralama: önce puan, sonra süre
+                        scores.sort((a, b) => {
+                            if (b.score !== a.score) {
+                                return b.score - a.score;
+                            }
+                            const timeA = convertTimeToSeconds(a.time);
+                            const timeB = convertTimeToSeconds(b.time);
+                            return timeA - timeB;
+                        });
+                        
+                        resolve(scores);
+                    }, (error) => {
+                        console.error("❌ Firebase'den skorlar alınamadı:", error);
+                        console.log("🔄 Yerel skorlara geçiliyor...");
+                        resolve(getLocalScores());
+                    });
+                } catch (error) {
+                    console.error("❌ Firebase okuma hatası:", error);
+                    console.log("🔄 Yerel skorlara geçiliyor...");
+                    resolve(getLocalScores());
+                }
+            });
+        }
+        
+        function getLocalScores() {
+            const scores = localStorage.getItem('cyberScores');
+            console.log("💾 LocalStorage'dan skorlar alınıyor:", {
+                rawData: scores,
+                parsedData: scores ? JSON.parse(scores) : [],
+                count: scores ? JSON.parse(scores).length : 0
+            });
+            
+            const parsedScores = scores ? JSON.parse(scores) : [];
+            
+            // Eğer localStorage null ise ve hiç skor yoksa, demo skorları ekle
+            // Ama eğer localStorage boş array ([]) ise demo ekleme (temizlenmiş demektir)
+            if (scores === null && parsedScores.length === 0) {
+                console.log("🎮 İlk defa açılıyor - Demo skorları ekleniyor...");
+                const demoScores = [
+                    {
+                        username: "Demo Oyuncu 1",
+                        score: 850,
+                        time: "2:15",
+                        date: new Date().toLocaleDateString('tr-TR'),
+                        timestamp: Date.now() - 300000,
+                        deviceId: "demo_device_1"
+                    },
+                    {
+                        username: "Demo Oyuncu 2", 
+                        score: 720,
+                        time: "3:42",
+                        date: new Date().toLocaleDateString('tr-TR'),
+                        timestamp: Date.now() - 200000,
+                        deviceId: "demo_device_2"
+                    },
+                    {
+                        username: "Demo Oyuncu 3",
+                        score: 650,
+                        time: "4:18",
+                        date: new Date().toLocaleDateString('tr-TR'),
+                        timestamp: Date.now() - 100000,
+                        deviceId: "demo_device_3"
+                    }
+                ];
+                
+                // Demo skorları localStorage'a kaydet
+                localStorage.setItem('cyberScores', JSON.stringify(demoScores));
+                console.log("✅ Demo skorları eklendi:", demoScores.length);
+                return demoScores;
+            } else if (scores === '[]') {
+                console.log("🗑️ Skorlar temizlenmiş durumda - demo eklenmeyecek");
+                return [];
+            }
+            
+            console.log("📊 Mevcut skorlar döndürülüyor:", parsedScores.length);
+            return parsedScores;
+        }
+        
+        function convertTimeToSeconds(timeString) {
+            if (!timeString || typeof timeString !== 'string') return 999999;
+            const parts = timeString.split(':');
+            if (parts.length !== 2) return 999999;
+            return parseInt(parts[0]) * 60 + parseInt(parts[1]);
+        }
+
+        function loadScoreboard() {
+            const scoreboardList = document.getElementById('scoreboard-list');
+            const paginationControls = document.getElementById('pagination-controls');
+            
+            // Yükleniyor göstergesi
+            scoreboardList.innerHTML = '<div style="text-align: center; color: #ffaa00; padding: 20px;">📊 Skorlar yükleniyor...</div>';
+            
+            console.log("🔄 Skorlar yükleniyor...", {
+                isFirebaseEnabled: isFirebaseEnabled,
+                database: database ? "Mevcut" : "Null"
+            });
+            
+            getScores().then(scores => {
+                console.log("✅ Skorlar alındı:", {
+                    count: scores.length,
+                    sample: scores.slice(0, 3),
+                    isFirebaseEnabled: isFirebaseEnabled
+                });
+                
+                totalScores = scores;
+                
+                // Yaş grubu filtresini uygula
+                if (currentAgeFilter !== 'all') {
+                    totalScores = totalScores.filter(score => {
+                        const scoreAgeGroup = score.ageGroup || 'adult'; // Varsayılan olarak adult
+                        return scoreAgeGroup === currentAgeFilter;
+                    });
+                    console.log(`🎯 ${currentAgeFilter} yaş grubu filtresi uygulandı:`, totalScores.length, "skor");
+                }
+                
+                // Debug: localStorage skorlarını da kontrol et
+                const localScores = getLocalScores();
+                console.log("📱 LocalStorage skorları:", {
+                    count: localScores.length,
+                    data: localScores.slice(0, 2)
+                });
+                
+                // Eğer Firebase skorları boşsa ve yerel skorlar varsa, yerel skorları kullan
+                if (totalScores.length === 0 && localScores.length > 0) {
+                    console.log("🔄 Firebase boş, yerel skorlar kullanılıyor");
+                    totalScores = localScores;
+                }
+                
+                if (totalScores.length === 0) {
+                    const emptyMessage = isFirebaseEnabled ? 
+                        '<div style="text-align: center; color: #cccccc; padding: 20px;">🎮 Henüz kimse oynamadı!<br><small>İlk skor için oyunu oynayın.</small><br><br>🔍 Debug: Firebase bağlı ama veri yok</div>' :
+                        '<div style="text-align: center; color: #cccccc; padding: 20px;">📱 Yerel ağ modu aktif<br><small>Bu ağda henüz kayıtlı skor yok.</small><br><br>💡 Test skoru eklemek için <a href="tablet-test.html" target="_blank" style="color: #00ff99;">tablet-test.html</a> sayfasını kullanın</div>';
+                    scoreboardList.innerHTML = emptyMessage;
+                    paginationControls.style.display = 'none';
+                    return;
+                }
+
+                const itemsPerPage = getItemsPerPage();
+                const totalPages = Math.ceil(totalScores.length / itemsPerPage);
+                const startIndex = (currentPage - 1) * itemsPerPage;
+                const endIndex = startIndex + itemsPerPage;
+                const currentScores = totalScores.slice(startIndex, endIndex);
+
+                scoreboardList.innerHTML = '';
+                
+                currentScores.forEach((score, index) => {
+                    const globalIndex = startIndex + index;
+                    const rank = globalIndex + 1;
+                    let rankDisplay = rank;
+                    if (rank === 1) rankDisplay = '🥇 1';
+                    else if (rank === 2) rankDisplay = '🥈 2';
+                    else if (rank === 3) rankDisplay = '🥉 3';
+                    
+                    // Device indicator ekle
+                    const deviceIndicator = score.deviceId ? 
+                        `<span style="font-size: 0.6rem; color: #888; margin-left: 3px;">📱</span>` : '';
+                    
+                    const scoreDiv = document.createElement('div');
+                    const isMobile = window.innerWidth <= 900;
+                    const isTablet = window.innerWidth <= 1100 && window.innerWidth > 900;
+                    
+                    let fontSize = '0.95rem';
+                    let padding = '12px 18px';
+                    
+                    if (isMobile) {
+                        fontSize = '0.8rem';
+                        padding = '8px 12px';
+                    } else if (isTablet) {
+                        fontSize = '0.9rem';
+                        padding = '10px 15px';
+                    }
+                    
+                    scoreDiv.style.cssText = `
+                        display: flex;
+                        background-color: rgba(255, 255, 255, 0.1);
+                        padding: ${padding};
+                        border-radius: 6px;
+                        margin-bottom: 5px;
+                        transition: all 0.3s ease;
+                        border: 1px solid rgba(255, 255, 255, 0.1);
+                        font-size: ${fontSize};
+                        line-height: 1.3;
+                    `;
+                    
+                    const ageGroupDisplay = score.ageGroup === 'child' ? '👶 Çocuk' : (score.ageGroup === 'adult' ? '👨 Yetişkin' : '❓ Bilinmiyor');
+                    
+                    scoreDiv.innerHTML = `
+                        <span style="flex: 0 0 80px; color: #ffaa00; font-weight: bold; text-align: center;">${rankDisplay}</span>
+                        <span style="flex: 1; color: #ffffff;">${score.username}${deviceIndicator}</span>
+                        <span style="flex: 0 0 120px; color: #ffffff; text-align: center; font-size: 0.9rem;">${ageGroupDisplay}</span>
+                        <span style="flex: 0 0 130px; color: #ffffff; text-align: center;">${score.score}</span>
+                        <span style="flex: 0 0 100px; color: #ffffff; text-align: center;">${score.time}</span>
+                        <span style="flex: 0 0 140px; color: #ffffff; text-align: center;">${score.date}</span>
+                    `;
+                    
+                    scoreDiv.addEventListener('mouseover', function() {
+                        this.style.backgroundColor = 'rgba(255, 255, 255, 0.2)';
+                        this.style.borderColor = 'rgba(255, 255, 255, 0.3)';
+                        this.style.transform = 'translateY(-1px)';
+                    });
+                    
+                    scoreDiv.addEventListener('mouseout', function() {
+                        this.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
+                        this.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                        this.style.transform = 'translateY(0)';
+                    });
+                    
+                    scoreboardList.appendChild(scoreDiv);
+                });
+
+                // Firebase durumu console'da yazdır (ekranda görünmez)
+                const currentItemsPerPage = 6; // Sabit 6 skor
+                const screenInfo = `(${currentItemsPerPage} skor/sayfa)`;
+                
+                if (isFirebaseEnabled) {
+                    console.log(`🌐 Çoklu ekran modu aktif - Tüm cihazlardan skorlar ${screenInfo}`);
+                } else {
+                    console.log(`💾 Yerel mod - Sadece bu cihazın skorları ${screenInfo}`);
+                }
+
+                // Sayfalama kontrollerini güncelle
+                updatePaginationControls(totalPages);
+            }).catch(error => {
+                console.error('Skorlar yüklenirken hata:', error);
+                scoreboardList.innerHTML = '<div style="text-align: center; color: #ff4444; padding: 20px;">❌ Skorlar yüklenemedi. Tekrar deneyin.</div>';
+                paginationControls.style.display = 'none';
+            });
+        }
+
+        // Yaş grubu filtreleme fonksiyonu
+        function filterByAgeGroup(ageGroup) {
+            currentAgeFilter = ageGroup;
+            currentPage = 1; // Filtreleme yapılınca ilk sayfaya dön
+            
+            // Buton aktif/pasif durumlarını güncelle
+            document.querySelectorAll('.age-filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+                btn.style.background = '#444';
+            });
+            
+            const activeBtn = document.getElementById(`filter-${ageGroup}`);
+            if (activeBtn) {
+                activeBtn.classList.add('active');
+                activeBtn.style.background = '#ff6600';
+            }
+            
+            console.log("🔍 Yaş grubu filtresi uygulandı:", ageGroup);
+            loadScoreboard();
+        }
+
+        function updatePaginationControls(totalPages) {
+            const paginationControls = document.getElementById('pagination-controls');
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+            const pageInfo = document.getElementById('page-info');
+
+            if (totalPages <= 1) {
+                paginationControls.style.display = 'none';
+                return;
+            }
+
+            paginationControls.style.display = 'flex';
+            
+            prevBtn.disabled = currentPage === 1;
+            nextBtn.disabled = currentPage === totalPages;
+            
+            pageInfo.textContent = `Sayfa ${currentPage} / ${totalPages}`;
+        }
+
+        function changePage(direction) {
+            const itemsPerPage = getItemsPerPage();
+            const totalPages = Math.ceil(totalScores.length / itemsPerPage);
+            const newPage = currentPage + direction;
+            
+            if (newPage >= 1 && newPage <= totalPages) {
+                currentPage = newPage;
+                loadScoreboard();
+            }
+        }
+
+        function updateLastUpdateTime() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('tr-TR', { 
+                hour: '2-digit', 
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            document.getElementById('last-update').textContent = `Son güncelleme: ${timeString}`;
+        }
+
+        function loadScoreboardWithUpdate() {
+            // Refresh butonuna animasyon ekle
+            const refreshBtn = document.getElementById('refresh-scoreboard-btn');
+            refreshBtn.style.transform = 'rotate(360deg)';
+            setTimeout(() => {
+                refreshBtn.style.transform = 'rotate(0deg)';
+            }, 300);
+            
+            loadScoreboard();
+            updateLastUpdateTime();
+        }
+
+        function clearScoreboard() {
+            if (confirm('Tüm skorları temizlemek istediğinizden emin misiniz? Bu işlem geri alınamaz!')) {
+                console.log("🗑️ Skor tablosu temizleme başlatılıyor...");
+                
+                if (isFirebaseEnabled) {
+                    // Firebase'den tüm skorları sil
+                    const scoresRef = database.ref('scores');
+                    scoresRef.remove().then(() => {
+                        console.log("✅ Firebase skorları temizlendi");
+                        
+                        // LocalStorage'ı da temizle
+                        localStorage.removeItem('cyberScores');
+                        console.log("✅ LocalStorage skorları temizlendi");
+                        
+                        // Demo skorları tekrar eklenmesini engelle
+                        localStorage.setItem('cyberScores', '[]');
+                        
+                        // Ağa temizleme mesajı gönder
+                        if (localNetworkChannel) {
+                            localNetworkChannel.postMessage({
+                                type: 'CLEAR_SCORES',
+                                data: { timestamp: Date.now() }
+                            });
+                        }
+                        
+                        currentPage = 1;
+                        loadScoreboard();
+                        updateLastUpdateTime();
+                        showTemporaryMessage('✅ Skor tablosu başarıyla temizlendi! (Firebase + Yerel)');
+                    }).catch((error) => {
+                        console.error("❌ Firebase skorları temizlenirken hata:", error);
+                        
+                        // Hata durumunda sadece yerel skorları temizle
+                        localStorage.removeItem('cyberScores');
+                        localStorage.setItem('cyberScores', '[]');
+                        
+                        currentPage = 1;
+                        loadScoreboard();
+                        updateLastUpdateTime();
+                        showTemporaryMessage('⚠️ Firebase hatası - Sadece yerel skorlar temizlendi');
+                    });
+                } else {
+                    // Sadece yerel skorları temizle
+                    localStorage.removeItem('cyberScores');
+                    localStorage.setItem('cyberScores', '[]');
+                    console.log("✅ Yerel skorlar temizlendi");
+                    
+                    // Ağa temizleme mesajı gönder
+                    if (localNetworkChannel) {
+                        localNetworkChannel.postMessage({
+                            type: 'CLEAR_SCORES',
+                            data: { timestamp: Date.now() }
+                        });
+                        console.log("📡 Ağa temizleme mesajı gönderildi");
+                    }
+                    
+                    currentPage = 1;
+                    loadScoreboard();
+                    updateLastUpdateTime();
+                    showTemporaryMessage('✅ Skor tablosu başarıyla temizlendi! (Yerel)');
+                }
+            }
+        }
+
+        // Test skorları ekleme fonksiyonu (debug amaçlı)
+        function addTestScores() {
+            console.log("🧪 Test skorları localStorage'a ekleniyor...");
+            
+            const testScores = [
+                {
+                    username: 'Test Oyuncu 1',
+                    score: 850,
+                    time: '03:45',
+                    date: new Date().toLocaleDateString('tr-TR'),
+                    timestamp: Date.now() - 1000,
+                    deviceId: 'test_device_1'
+                },
+                {
+                    username: 'Test Oyuncu 2', 
+                    score: 920,
+                    time: '02:30',
+                    date: new Date().toLocaleDateString('tr-TR'),
+                    timestamp: Date.now() - 2000,
+                    deviceId: 'test_device_2'
+                },
+                {
+                    username: 'Test Oyuncu 3',
+                    score: 780,
+                    time: '04:15',
+                    date: new Date().toLocaleDateString('tr-TR'),
+                    timestamp: Date.now() - 3000,
+                    deviceId: 'test_device_3'
+                }
+            ];
+            
+            // Mevcut skorları al
+            const existingScores = getLocalScores();
+            console.log("📋 Mevcut skorlar:", existingScores.length);
+            
+            // Test skorlarını ekle
+            const allScores = [...existingScores, ...testScores];
+            
+            // Sırala: önce puan, sonra süre
+            allScores.sort((a, b) => {
+                if (b.score !== a.score) {
+                    return b.score - a.score;
+                }
+                const timeA = convertTimeToSeconds(a.time);
+                const timeB = convertTimeToSeconds(b.time);
+                return timeA - timeB;
+            });
+            
+            // localStorage'a kaydet
+            localStorage.setItem('cyberScores', JSON.stringify(allScores));
+            
+            console.log("✅ Test skorları eklendi:", allScores.length);
+            
+            // Skorları yeniden yükle
+            loadScoreboardWithUpdate();
+        }
+
+        // Test Firebase skorları ekleme fonksiyonu 
+        function addTestScoresToFirebase() {
+            if (!isFirebaseEnabled) {
+                console.log("❌ Firebase kapalı, test skorları eklenemiyor");
+                return;
+            }
+            
+            console.log("🔥 Test skorları Firebase'e ekleniyor...");
+            
+            const testFirebaseScores = [
+                {
+                    username: 'Firebase Test 1',
+                    score: 999,
+                    time: '01:30',
+                    date: new Date().toLocaleDateString('tr-TR'),
+                    timestamp: Date.now(),
+                    deviceId: 'firebase_test_1'
+                },
+                {
+                    username: 'Firebase Test 2',
+                    score: 875,
+                    time: '02:45',
+                    date: new Date().toLocaleDateString('tr-TR'),
+                    timestamp: Date.now() + 1000,
+                    deviceId: 'firebase_test_2'
+                }
+            ];
+            
+            testFirebaseScores.forEach((score, index) => {
+                setTimeout(() => {
+                    database.ref('scores').push(score).then(() => {
+                        console.log(`✅ Firebase test skoru ${index + 1} eklendi`);
+                        if (index === testFirebaseScores.length - 1) {
+                            setTimeout(() => loadScoreboardWithUpdate(), 1000);
+                        }
+                    }).catch(error => {
+                        console.error(`❌ Firebase test skoru ${index + 1} eklenemedi:`, error);
+                    });
+                }, index * 500);
+            });
+        }
+
+        // Firebase durumunu test et ve skor verilerini kontrol et
+        function testFirebaseConnection() {
+            console.log("🧪 Firebase bağlantısı test ediliyor...");
+            
+            if (!isFirebaseEnabled) {
+                console.log("❌ Firebase kapalı - yerel moda geçiliyor");
+                return;
+            }
+            
+            // Test skoru ekle (geliştirme amaçlı)
+            if (window.location.hash === '#test') {
+                const testScore = {
+                    username: 'Test Kullanıcısı',
+                    score: 999,
+                    time: '05:30',
+                    date: new Date().toLocaleDateString('tr-TR'),
+                    timestamp: Date.now(),
+                    deviceId: 'test_device_' + Date.now()
+                };
+                
+                database.ref('scores').push(testScore).then(() => {
+                    console.log("✅ Test skoru eklendi");
+                    loadScoreboardWithUpdate();
+                }).catch(error => {
+                    console.error("❌ Test skoru eklenemedi:", error);
+                });
+            }
+            
+            // Firebase veri yapısını kontrol et
+            database.ref('scores').limitToFirst(1).once('value', (snapshot) => {
+                if (snapshot.exists()) {
+                    console.log("✅ Firebase'de veri mevcut");
+                    const firstScore = snapshot.val();
+                    console.log("📋 İlk skor örneği:", firstScore);
+                } else {
+                    console.log("⚠️ Firebase'de henüz veri yok");
+                }
+            });
+        }
+        function setupRealtimeScoreboard() {
+            if (isFirebaseEnabled) {
+                console.log("🔄 Gerçek zamanlı skorboard dinleyicisi başlatılıyor...");
+                const scoresRef = database.ref('scores');
+                
+                // Yeni skor eklendiğinde otomatik güncelle
+                scoresRef.on('child_added', function(snapshot) {
+                    console.log("📊 Yeni skor eklendi, skorboard güncelleniyor...");
+                    loadScoreboard();
+                    updateLastUpdateTime();
+                });
+                
+                // Skor değiştirildiğinde otomatik güncelle
+                scoresRef.on('child_changed', function(snapshot) {
+                    console.log("📊 Skor güncellendi, skorboard yenileniyor...");
+                    loadScoreboard();
+                    updateLastUpdateTime();
+                });
+                
+                // Skor silindiğinde otomatik güncelle
+                scoresRef.on('child_removed', function(snapshot) {
+                    console.log("🗑️ Skor silindi, skorboard güncelleniyor...");
+                    loadScoreboard();
+                    updateLastUpdateTime();
+                });
+                
+                console.log("✅ Gerçek zamanlı skorboard aktif!");
+            } else {
+                // Firebase yoksa normal 5 saniyede bir güncelle
+                console.log("⏱️ Firebase yok, 5 saniyede bir güncelleme aktif");
+                setInterval(loadScoreboardWithUpdate, 5000);
+            }
+        }
+
+        // Firebase durumu değiştiğinde skorboard'ı yeniden başlat
+        let realtimeSetup = false;
+        
+        function checkFirebaseAndSetupRealtime() {
+            if (isFirebaseEnabled && !realtimeSetup) {
+                setupRealtimeScoreboard();
+                realtimeSetup = true;
+            } else if (!isFirebaseEnabled && !realtimeSetup) {
+                // Firebase yoksa normal interval
+                setInterval(loadScoreboardWithUpdate, 5000);
+                realtimeSetup = true;
+            }
+        }
+        
+        // Ekran boyutu değiştiğinde skorboard'ı yeniden yükle
+        window.addEventListener('resize', function() {
+            // Debounce işlemi - sürekli yeniden yükleme engellemek için
+            clearTimeout(window.resizeTimeout);
+            window.resizeTimeout = setTimeout(function() {
+                console.log("🔄 Ekran boyutu değişti, skorboard yeniden yükleniyor...");
+                loadScoreboard();
+            }, 500);
+        });
+
+        // Debug butonları ekleme (URL'de #debug varsa)
+        function addDebugButtons() {
+            if (window.location.hash.includes('debug')) {
+                console.log("🔧 Debug modu aktif - Extra butonlar gösteriliyor");
+                
+                // Manuel skor talebi butonunu göster
+                const requestBtn = document.getElementById('request-scores-btn');
+                if (requestBtn) {
+                    requestBtn.style.display = 'inline-block';
+                }
+                
+                // Debug panel oluştur
+                const debugPanel = document.createElement('div');
+                debugPanel.style.cssText = `
+                    position: fixed;
+                    top: 10px;
+                    left: 10px;
+                    z-index: 9999;
+                    background: rgba(0,0,0,0.9);
+                    padding: 15px;
+                    border-radius: 8px;
+                    color: white;
+                    font-family: Arial, sans-serif;
+                    font-size: 12px;
+                    border: 2px solid #00ff99;
+                `;
+                
+                debugPanel.innerHTML = `
+                    <div style="margin-bottom: 10px; font-weight: bold; color: #00ff99;">🔧 DEBUG PANEL</div>
+                    <button onclick="requestScoresManually()" style="margin: 2px; padding: 5px 10px; font-size: 11px;">📡 Skor Talep Et</button>
+                    <button onclick="loadScoreboard()" style="margin: 2px; padding: 5px 10px; font-size: 11px;">🔄 Yenile</button>
+                    <button onclick="clearScoreboard()" style="margin: 2px; padding: 5px 10px; font-size: 11px;">🗑️ Temizle</button>
+                    <br>
+                    <button onclick="console.log('LocalStorage:', getLocalScores())" style="margin: 2px; padding: 5px 10px; font-size: 11px;">📋 Log Skorlar</button>
+                    <button onclick="window.open('tablet-test.html', '_blank')" style="margin: 2px; padding: 5px 10px; font-size: 11px;">🧪 Test</button>
+                `;
+                
+                document.body.appendChild(debugPanel);
+            }
+            
+            return;
+            
+            console.log("🔧 Debug butonları ekleniyor...");
+            
+            const debugPanel = document.createElement('div');
+            debugPanel.style.cssText = `
+                position: fixed;
+                top: 10px;
+                left: 10px;
+                z-index: 9999;
+                background: rgba(0,0,0,0.8);
+                padding: 10px;
+                border-radius: 8px;
+                color: white;
+                font-family: Arial, sans-serif;
+                font-size: 12px;
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+                max-width: 200px;
+            `;
+            
+            debugPanel.innerHTML = `
+                <div style="font-weight: bold; text-align: center; margin-bottom: 8px;">
+                    🔧 DEBUG PANEL
+                </div>
+                <button onclick="addTestScores()" style="padding: 5px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                    💾 LocalStorage Test Ekle
+                </button>
+                <button onclick="addTestScoresToFirebase()" style="padding: 5px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                    🔥 Firebase Test Ekle
+                </button>
+                <button onclick="localStorage.removeItem('cyberScores'); loadScoreboardWithUpdate();" style="padding: 5px; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                    🗑️ LocalStorage Temizle
+                </button>
+                <button onclick="loadScoreboardWithUpdate()" style="padding: 5px; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                    🔄 Skorları Yenile
+                </button>
+                <div style="font-size: 10px; margin-top: 8px; color: #ccc;">
+                    Firebase: ${isFirebaseEnabled ? '🟢 Aktif' : '🔴 Kapalı'}
+                </div>
+            `;
+            
+            document.body.appendChild(debugPanel);
+        }
+
+        // Initial load
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log("🚀 Scoreboard yükleniyor...");
+            console.log("🔧 Firebase durumu:", {
+                isFirebaseEnabled: isFirebaseEnabled,
+                database: database ? "Mevcut" : "Null"
+            });
+            
+        // Manuel skor talebi
+        function requestScoresManually() {
+            console.log("🔄 Manuel skor talebi başlatılıyor...");
+            
+            if (localNetworkChannel) {
+                localNetworkChannel.postMessage({ type: 'REQUEST_SCORES' });
+                console.log("📡 Manuel skor talebi gönderildi");
+                
+                // 2 saniye sonra scoreboard'u güncelle
+                setTimeout(() => {
+                    loadScoreboard();
+                    console.log("🔄 Manuel scoreboard güncellendi");
+                }, 2000);
+                
+                // Başarı mesajı göster
+                showTemporaryMessage("📡 Skor talebi gönderildi!");
+            } else {
+                console.log("❌ LocalNetworkChannel mevcut değil");
+                showTemporaryMessage("❌ Yerel ağ bağlantısı yok!");
+            }
+        }
+        
+        // Geçici mesaj göster
+        function showTemporaryMessage(message) {
+            const messageDiv = document.createElement('div');
+            messageDiv.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: rgba(0,255,153,0.9);
+                color: #000;
+                padding: 10px 20px;
+                border-radius: 8px;
+                font-weight: bold;
+                z-index: 10000;
+                animation: fadeInOut 3s ease;
+            `;
+            messageDiv.textContent = message;
+            document.body.appendChild(messageDiv);
+            
+            setTimeout(() => {
+                messageDiv.remove();
+            }, 3000);
+        }
+
+            // Debug butonları ekle (eğer URL'de #debug varsa)
+            addDebugButtons();
+            
+            // Firebase bağlantısını test et
+            testFirebaseConnection();
+            
+            // Skorları yükle
+            loadScoreboardWithUpdate();
+            
+            // Firebase bağlantısı için biraz bekle sonra gerçek zamanlı sistemi başlat
+            setTimeout(checkFirebaseAndSetupRealtime, 1000);
+        });
+    </script>
+</body>
+</html> 
