@@ -1317,6 +1317,23 @@
         document.getElementById('username-panel').style.display = 'none';
         document.getElementById('password-panel').style.display = 'flex';
         
+        // Parola panelini sıfırla
+        const passwordDescGame = document.getElementById('password-desc');
+        if (passwordDescGame) {
+            passwordDescGame.textContent = 'Parolanızı girin ve gücünü test edin.';
+            passwordDescGame.style.display = 'block';
+            passwordDescGame.style.color = '';
+        }
+        
+        // Input wrapper'ları göster
+        const passwordInputWrapper = document.getElementById('password-input-wrapper');
+        const passwordConfirmWrapper = document.getElementById('password-confirm-wrapper');
+        const passwordCheckBtnWrapper = document.getElementById('password-check-btn-wrapper');
+        
+        if (passwordInputWrapper) passwordInputWrapper.style.display = 'block';
+        if (passwordConfirmWrapper) passwordConfirmWrapper.style.display = 'block';
+        if (passwordCheckBtnWrapper) passwordCheckBtnWrapper.style.display = 'flex';
+        
         // Ana ekrana dön butonunu göster
         document.getElementById('home-button').style.display = 'block';
         
@@ -1570,6 +1587,7 @@
              if (passwordDescFinal) {
                  passwordDescFinal.textContent = 'Parolanızı girin ve gücünü test edin.';
                  passwordDescFinal.style.color = ''; // Varsayılan renk
+                 passwordDescFinal.style.display = 'block'; // Görünür yap
              }
              
              // Parola kontrol butonunu sıfırla
@@ -2641,8 +2659,7 @@
     function toggleQuestionSelection(index, element) {
         // Eğer bu soru zaten cevaplanmışsa, tekrar tıklamaya izin verme
         if (selectedAnswers[index] !== undefined) {
-            console.log("⚠️ Bu soru zaten cevaplanmış, tekrar tıklama yapılamaz!");
-            return;
+            return; // Console log kaldırıldı performans için
         }
         
         // Seçim yap (artık sadece bir kez yapılabilir)
@@ -2680,7 +2697,7 @@
                 playSuccessSound();
             }, 50);
             
-            console.log("✅ Doğru seçim: " + (question.text || question.question) + " (+30 puan)");
+            // Console log kaldırıldı performans için
         } else {
             // Yanlış seçim - PUAN DÜŞÜR, SES ÇAL ve açıklama göster!
             element.classList.add('wrong');
@@ -2693,7 +2710,7 @@
             }, 50);
             
             showExplanation(explanation, false);
-            console.log("❌ Yanlış seçim: " + (question.text || question.question) + " (-15 puan)");
+            // Console log kaldırıldı performans için
         }
         
         // Submit butonunu al
@@ -2704,8 +2721,7 @@
         
         // Tüm soruya cevap verildi mi kontrol et
         if (Object.keys(selectedAnswers).length === totalQuestions) {
-            // Tüm sorular cevaplandı - buton kullanıma hazır (turuncu efekt yok)
-            console.log("✅ Tüm sorular cevaplandı - Phishing testine geçebilirsiniz!");
+            // Tüm sorular cevaplandı - console log kaldırıldı performans için
         }
     }
     
@@ -3066,6 +3082,7 @@
         if (passwordDescElement) {
             passwordDescElement.textContent = 'Parolanızı girin ve gücünü test edin.';
             passwordDescElement.style.color = ''; // Varsayılan renk
+            passwordDescElement.style.display = 'block'; // Görünür yap
         }
         if (confirmPasswordInput) confirmPasswordInput.value = '';
         
